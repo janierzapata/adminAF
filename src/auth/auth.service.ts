@@ -1,22 +1,53 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
-import { Student } from '../models/student.schema';
+import { User } from '../models/user.schema';
+import * as bcrypt from 'bcrypt';
+import { LoginAuthDto } from './dto/login.auth.dto';
+import { UserAuthDto } from './dto/user-auth.dto';
+import { JwtService } from '@nestjs/jwt'
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class AuthService {
 
-constructor(@InjectModel(Student.name) private studentModel: Model<Student>) {}
+  constructor(
+    private jwtService: JwtService,
+    @InjectModel(User.name) private studentModel: Model<User>,
+  ) { }
 
-
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  async register(createAuthDto: CreateAuthDto): Promise<User> {
+    const username = createAuthDto.username;
+    const user = await this.studentModel.findOne({ username }).exec();
+    if (user) {
+      throw new InternalServerErrorException('el username ya existe');
+    }
+    createAuthDto.password = await bcrypt.hash(createAuthDto.password, 10);
+    const createUser = new this.studentModel({ ...createAuthDto });
+    return createUser.save();
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async login(loginAuthDto: LoginAuthDto) {
+    const username = loginAuthDto.username;
+    const user = await this.studentModel.findOne({ username }).exec();
+
+    if (user) {
+      if (await bcrypt.compare(loginAuthDto.password, user.password)) {
+
+        const payload = { sub: user._id, username: user.username };
+        const userDto: UserAuthDto = {
+          username: user.username,
+          firstName: user.firstname,
+          lastName: user.lastname,
+          email: user.email,
+          token: await this.jwtService.signAsync(payload)
+        };
+        return userDto;
+      }
+      throw new UnauthorizedException();
+    }
   }
 
   findOne(id: number) {
