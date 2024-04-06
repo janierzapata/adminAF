@@ -18,15 +18,15 @@ export class AuthService {
     @InjectModel(User.name) private studentModel: Model<User>,
   ) { }
 
-  async register(createAuthDto: CreateAuthDto): Promise<User> {
+  async register(createAuthDto: CreateAuthDto): Promise<void> {
     const username = createAuthDto.username;
     const user = await this.studentModel.findOne({ username }).exec();
     if (user) {
-      throw new InternalServerErrorException('el username ya existe');
+      throw new InternalServerErrorException('The username already exists');
     }
     createAuthDto.password = await bcrypt.hash(createAuthDto.password, 10);
     const createUser = new this.studentModel({ ...createAuthDto });
-    return createUser.save();
+    await createUser.save();
   }
 
   async login(loginAuthDto: LoginAuthDto) {
@@ -42,6 +42,7 @@ export class AuthService {
           firstName: user.firstname,
           lastName: user.lastname,
           email: user.email,
+          rol: user.role,
           token: await this.jwtService.signAsync(payload)
         };
         return userDto;

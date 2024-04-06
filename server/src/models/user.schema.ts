@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as SchemaMongoose } from 'mongoose';
 import { Roles } from '../enums/roles.enum';
+import { TypeDocuments } from 'src/enums/type_document.enum';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -33,6 +34,13 @@ export class User {
 
   @Prop()
   document: String;
+
+  @Prop({
+    type: String,
+    enum: TypeDocuments,
+    default: TypeDocuments.CEDULA,
+  })
+  type_document: TypeDocuments;
 
   // ** Role information
 
