@@ -5,7 +5,8 @@ import { AuthController } from './controllers/auth.controller';
 import { User, usertSchema } from '../../models/user.schema';
 import { Course, courseSchema } from '../../models/course.schema';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from "../../shared/constants/Constantes";
+import { MailerService } from "../../shared/services/mailer.service";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   controllers: [AuthController],
@@ -15,12 +16,15 @@ import { jwtConstants } from "../../shared/constants/Constantes";
       { name: User.name, schema: usertSchema },
       { name: Course.name, schema: courseSchema },
     ]),
-    JwtModule.register({
-      global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule], // Importa ConfigModule para poder utilizar ConfigService en el factory
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'), // Obtén la secret de JWT desde las variables de entorno
+        signOptions: { expiresIn: configService.get<string>('TOKEN_EXPIRE') },
+      }),
+      inject: [ConfigService], // Inyecta ConfigService en el factory
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService,MailerService],
 })
 export class AuthModule {}

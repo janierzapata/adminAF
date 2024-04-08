@@ -11,11 +11,16 @@ import { LoginAuthDto } from '../dto/login.auth.dto';
 import { UserAuthDto } from '../dto/user-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { User } from "../../../models/user.schema";
+import { MailerService } from "../../../shared/services/mailer.service";
+import { ConfigService } from '@nestjs/config';
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
+    private readonly mailer: MailerService,
+    private readonly configService: ConfigService,
     @InjectModel(User.name) private studentModel: Model<User>,
   ) {}
 
@@ -25,6 +30,7 @@ export class AuthService {
     if (user) {
       throw new InternalServerErrorException('The username already exists');
     }
+    // this.mailer.sendEmail('sebastik119@hotmail.es','asunto prueba', 'mensjae prueba')
     createAuthDto.password = await bcrypt.hash(createAuthDto.password, 10);
     const createUser = new this.studentModel({ ...createAuthDto });
     await createUser.save();
@@ -33,7 +39,8 @@ export class AuthService {
   async login(loginAuthDto: LoginAuthDto) {
     const username = loginAuthDto.username;
     const user = await this.studentModel.findOne({ username }).exec();
-
+    console.log(this.configService.get('JWT_SECRET'));
+    console.log(process.env.JWT_SECRET);
     if (user) {
       if (await bcrypt.compare(loginAuthDto.password, user.password)) {
         const payload = { sub: user._id, username: user.username };
@@ -56,6 +63,7 @@ export class AuthService {
   }
 
   update(id: number) {
+
     return `This action updates a #${id} auth`;
   }
 
