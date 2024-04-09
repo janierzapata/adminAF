@@ -16,6 +16,7 @@ export class CreateAuthDto {
     @ApiProperty()
     lastname: String;
     @ApiProperty()
+    @IsNotEmpty({ message: 'The email is required' })
     @IsEmail({}, { message: 'The email must be in a valid format' })
     email: String;
     @ApiProperty()

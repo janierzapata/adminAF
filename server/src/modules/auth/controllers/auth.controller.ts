@@ -13,7 +13,9 @@ import { CreateAuthDto } from '../dto/create-auth.dto';
 import { LoginAuthDto } from '../dto/login.auth.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserAuthDto } from '../dto/user-auth.dto';
+import { Public } from "../../../shared/decorador/public.decorator";
 
+@ Public()
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {

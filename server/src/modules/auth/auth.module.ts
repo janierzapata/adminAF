@@ -7,10 +7,11 @@ import { Course, courseSchema } from '../../models/course.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerService } from "../../shared/services/mailer.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { PruebaController } from "./controllers/prueba.controller";
 
 @Module({
-  controllers: [AuthController],
-  exports: [AuthService],
+  controllers: [AuthController,PruebaController],
+  exports: [AuthService,JwtModule],
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: usertSchema },
