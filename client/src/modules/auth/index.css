@@ -57,7 +57,7 @@ body {
   transform: translateX(100%);
 }
 
-form {
+div.form {
   background-color: #ffffff;
   display: flex;
   align-items: center;
@@ -68,7 +68,7 @@ form {
   text-align: center;
 }
 
-form > input {
+div.form > input {
   border-radius: 20px;
   border: 1px solid #6f6490;
   background-color: #ffffff;
@@ -88,7 +88,7 @@ form > input {
   }
 }
 
-form > h1 {
+div.form > h1 {
   font-weight: bold;
   margin: 0;
   color: #6f6490;

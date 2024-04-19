@@ -23,6 +23,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config,options);
   SwaggerModule.setup('api', app, document);
 
+  app.enableCors({origin: true}); // Habilita CORS para todas las rutas
+  // app.enableCors({origin: ["http://localhost:5173","*"]}); // Habilita CORS para todas las rutas
   app.listen(PORT).then(() => {
     console.log(`Server started on http://localhost:${PORT}`);
   });

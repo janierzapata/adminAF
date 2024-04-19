@@ -56,6 +56,8 @@ export class AuthService {
     const user = await this.studentModel.findOne({ email }).exec();
     if (user) {
       const isMatch: boolean = bcrypt.compareSync(password, user.password);
+      console.log({isMatch});
+      
       if (isMatch) {
         return user;
       }

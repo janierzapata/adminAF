@@ -1,10 +1,14 @@
-import './App.css'
-import { Login } from './modules/auth'
+import { useEffect } from "react";
+import { AppRouter } from "./router/AppRouter.jsx";
+
+import { authStore } from "./store/auth/authState.jsx";
 
 function App() {
 
+  
+
   return (
-    <Login />
+    <AppRouter />
   )
 }
 

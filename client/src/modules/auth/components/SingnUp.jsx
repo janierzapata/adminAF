@@ -5,13 +5,13 @@ export const SingnUp = ({signIn}) => {
     <div
       className={`sign_up_container ${!signIn ? "sign_up_container__" : ""}`}
     >
-      <form>
+      <div className="form">
         <h1>Crear Cuenta</h1>
         <input type="text" placeholder="Name" />
         <input type="email" placeholder="Email" />
         <input type="password" placeholder="Password" />
         <button>Crear</button>
-      </form>
+      </div>
     </div>
   );
 };

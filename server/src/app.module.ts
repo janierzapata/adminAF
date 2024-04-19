@@ -5,7 +5,6 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthGuard } from "./guards/auth.guard";
 import { APP_GUARD } from "@nestjs/core";
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -13,6 +12,7 @@ import { APP_GUARD } from "@nestjs/core";
     }),
     AuthModule,
     DatabaseModule,
+    
   ],
   providers: [
     {
