@@ -20,7 +20,6 @@ export class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
     if (isPublic) {
-      // 💡 See this condition
       return true;
     }
     const request = context.switchToHttp().getRequest();
@@ -35,8 +34,6 @@ export class AuthGuard implements CanActivate {
           secret: process.env.JWT_SECRET
         }
       );
-      console.log(a);
-
     } catch {
       throw new UnauthorizedException('Invalid Token');
     }

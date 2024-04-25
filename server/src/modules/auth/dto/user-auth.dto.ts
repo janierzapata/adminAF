@@ -1,7 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Roles } from "src/shared/constants/enums/roles.enum";
+import {ObjectId} from "mongoose";
 
 export class UserAuthDto {
+    @ApiProperty()
+    id: any;
     @ApiProperty()
     username:String;
     @ApiProperty()

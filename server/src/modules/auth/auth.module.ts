@@ -7,6 +7,8 @@ import { Course, courseSchema } from '../../models/course.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerService } from "../../shared/services/mailer.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import {UserService} from "./services/user.service";
+import {EncrypService} from "./services/encryp.service";
 
 @Module({
   controllers: [AuthController],
@@ -25,6 +27,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
       inject: [ConfigService], // Inyecta ConfigService en el factory
     }),
   ],
-  providers: [AuthService,MailerService],
+  providers: [AuthService,MailerService,UserService,EncrypService],
 })
 export class AuthModule {}

@@ -1,80 +1,84 @@
-import { Model } from "mongoose";
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException
-} from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { CreateAuthDto } from "../dto/create-auth.dto";
-import * as bcrypt from "bcrypt";
-import { LoginAuthDto } from "../dto/login.auth.dto";
-import { UserAuthDto } from "../dto/user-auth.dto";
-import { JwtService } from "@nestjs/jwt";
-import { User } from "../../../models/user.schema";
-import { MailerService } from "../../../shared/services/mailer.service";
-import { ConfigService } from "@nestjs/config";
+import {BadRequestException, Injectable} from "@nestjs/common";
+import {CreateAuthDto} from "../dto/create-auth.dto";
+import {LoginAuthDto} from "../dto/login.auth.dto";
+import {UserAuthDto} from "../dto/user-auth.dto";
+import {JwtService} from "@nestjs/jwt";
+import {MailerService} from "../../../shared/services/mailer.service";
+import {UserService} from "./user.service";
 
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private jwtService: JwtService,
-    private readonly mailer: MailerService,
-    private readonly configService: ConfigService,
-    @InjectModel(User.name) private studentModel: Model<User>
-  ) {
-  }
-
-  async register(createAuthDto: CreateAuthDto): Promise<void> {
-    const username = createAuthDto.username;
-    const user = await this.studentModel.findOne({ username }).exec();
-    if (user) {
-      throw new InternalServerErrorException("The username already exists");
+    constructor(
+        private jwtService: JwtService,
+        private readonly mailer: MailerService,
+        private userService: UserService
+    ) {
     }
-    // this.mailer.sendEmail('sebastik119@hotmail.es','asunto prueba', 'mensjae prueba')
-    createAuthDto.password = await bcrypt.hash(createAuthDto.password, 10);
-    const createUser = new this.studentModel({ ...createAuthDto });
-    await createUser.save();
-  }
 
-  async login(loginAuthDto: LoginAuthDto) {
-    const user = await this.validateUser(loginAuthDto.email, loginAuthDto.password);
-    const payload = { sub: user._id, email: user.email };
-    const userDto: UserAuthDto = {
-      username: user.username,
-      firstName: user.firstname,
-      lastName: user.lastname,
-      email: user.email,
-      rol: user.role,
-      token: await this.jwtService.signAsync(payload)
-    };
-    return userDto;
-  }
-
-  async validateUser(email: string, password: string) {
-    const user = await this.studentModel.findOne({ email }).exec();
-    if (user) {
-      const isMatch: boolean = bcrypt.compareSync(password, user.password);
-      console.log({isMatch});
-      
-      if (isMatch) {
-        return user;
-      }
+    async register(createAuthDto: CreateAuthDto): Promise<void> {
+        const user = await this.userService.createUser(createAuthDto);
+        await this.sendVerificationEmail(user._id,user.email.toString());
     }
-    throw new UnauthorizedException("User o password is wrong");
-  }
+    async resendVerificationEmail(email:string){
+        const user = await this.userService.findByEmail(email);
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+        if (user.isActive){
+            throw new BadRequestException('The account is already verified');
+        }
+        return await this.sendVerificationEmail(user._id,user.email.toString());
+    }
+    async sendVerificationEmail(userId:any, email: string) {
+        const verificationToken = await this.generateToken(userId, email);
+        const verificationLink = `http://localhost:3000/auth/verify?token=${verificationToken}`;
+        await this.mailer.sendEmail(email, 'Verificacion Correo', verificationLink);
+        return {message: 'Verification email sent'};
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    async login(loginAuthDto: LoginAuthDto) {
+        const user = await this.userService.validateUser(loginAuthDto.email, loginAuthDto.password);
+        const userDto: UserAuthDto = {
+            id: user._id,
+            username: user.username,
+            firstName: user.firstname,
+            lastName: user.lastname,
+            email: user.email,
+            rol: user.role,
+            token: await this.generateToken(user._id, user.email)
+        };
+        return userDto;
+    }
 
-  update(id: number) {
+    verificationToken(token: string) {
+        const decodedToken = this.verifyToken(token);
+        const userId = decodedToken.sub;
+        this.userService.activateAccount(userId)
+        return {message: '¡Successfully verified account!'};
+    }
 
-    return `This action updates a #${id} auth`;
-  }
+    verifyToken(token: string) {
+        return this.jwtService.verify(token, {
+            secret: process.env.JWT_SECRET,
+        });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+    async generateToken(id: any, email: String) {
+        const payload = {sub: id, email: email};
+        return this.jwtService.signAsync(payload)
+    }
+
+    findOne(id: number) {
+        return `This action returns a #${id} auth`;
+    }
+
+    update(id: number) {
+
+        return `This action updates a #${id} auth`;
+    }
+
+    remove(id: number) {
+        return `This action removes a #${id} auth`;
+    }
 }

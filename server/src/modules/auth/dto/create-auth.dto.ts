@@ -4,9 +4,6 @@ import { Roles } from "src/shared/constants/enums/roles.enum";
 import { TypeDocuments } from "src/shared/constants/enums/type_document.enum";
 
 export class CreateAuthDto {
-    @IsNotEmpty({ message: 'The username is required' })
-    @ApiProperty()
-    username: String;
     @IsNotEmpty({ message: 'The password is required' })
     @Length(6, 20, { message: 'Password must be between 8 and 20 characters' })
     @ApiProperty()

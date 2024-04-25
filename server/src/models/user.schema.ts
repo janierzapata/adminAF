@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as SchemaMongoose } from 'mongoose';
 import { Roles } from '../shared/constants/enums/roles.enum';
 import { TypeDocuments } from 'src/shared/constants/enums/type_document.enum';
+import {isBoolean} from "class-validator";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -41,6 +42,13 @@ export class User {
     default: TypeDocuments.CEDULA,
   })
   type_document: TypeDocuments;
+
+  // ** accoun isActive
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isActive: boolean;
 
   // ** Role information
 

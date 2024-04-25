@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import * as smtpTransport from 'nodemailer-smtp-transport';
 import * as process from "process";
+import * as Handlebars from 'handlebars';
+import * as fs from 'fs';
 
 
 @Injectable()
 export class MailerService {
   private transporter: nodemailer.Transporter;
+  private emailTemplate: Handlebars.TemplateDelegate;
 
   constructor() {
     this.transporter = nodemailer.createTransport(smtpTransport({
@@ -24,17 +27,24 @@ export class MailerService {
         rejectUnauthorized: false // No verificar el certificado del servidor de correo
       }
     }));
+    // Cargar y compilar la plantilla de correo
+    const templatePath = 'src/shared/templates/verificationEmail/email-template.hbs';
+    const templateContent = fs.readFileSync(templatePath, 'utf8');
+    this.emailTemplate = Handlebars.compile(templateContent);
   }
 
   async sendEmail(to: string, subject: string, text: string) {
     try {
+      const html = this.emailTemplate({ subject, text });
+      // Enviar correo con HTML renderizado
       const info = await this.transporter.sendMail({
         from: process.env.USER_MAIL_SENDER,
         to,
         subject,
-        text,
+        html, // Enviar HTML en lugar de texto plano
       });
-      console.log('Message sent: %s', info.messageId);
+      console.log('Message sent: %s', info);
+      return info;
     } catch (error) {
       console.error('Error occurred while sending email:', error);
     }

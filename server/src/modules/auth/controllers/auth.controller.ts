@@ -6,7 +6,7 @@ import {
   Param,
   Delete,
   Put,
-  ValidationPipe,
+  ValidationPipe, Query, BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { CreateAuthDto } from '../dto/create-auth.dto';
@@ -15,7 +15,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserAuthDto } from '../dto/user-auth.dto';
 import { Public } from "../../../shared/decorador/public.decorator";
 
-@ Public()
+@Public()
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -33,6 +33,15 @@ export class AuthController {
   login(@Body() loginAuthDto: LoginAuthDto) {
     return this.authService.login(loginAuthDto);
   }
+  @Get('verify')
+  async verify(@Query('token') token: string) {
+    return this.authService.verificationToken(token);
+  }
+  @Get('resend-verification')
+  async resendVerificationEmail(@Query('email') email: string) {
+    return await this.authService.resendVerificationEmail(email);
+  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
